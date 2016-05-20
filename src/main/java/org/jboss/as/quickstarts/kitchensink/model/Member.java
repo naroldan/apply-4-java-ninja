@@ -58,8 +58,21 @@ public class Member implements Serializable {
     @Digits(fraction = 0, integer = 12)
     @Column(name = "phone_number")
     private String phoneNumber;
+    
+    @NotNull
+    @NotEmpty
+    @Column
+    private String address;
+   
+    public String getAddress() {
+		return address;
+	}
 
-    public Long getId() {
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	public Long getId() {
         return id;
     }
 
