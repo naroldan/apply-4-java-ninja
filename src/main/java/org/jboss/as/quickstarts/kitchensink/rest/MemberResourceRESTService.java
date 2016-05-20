@@ -96,9 +96,9 @@ public class MemberResourceRESTService {
         try {
             // Validates member using bean validation
             validateMember(member);
-
+            
             registration.register(member);
-
+            
             // Create an "ok" response
             builder = Response.ok();
         } catch (ConstraintViolationException ce) {
@@ -107,7 +107,12 @@ public class MemberResourceRESTService {
         } catch (ValidationException e) {
             // Handle the unique constrain violation
             Map<String, String> responseObj = new HashMap<>();
-            responseObj.put("email", "Email taken");
+            if(emailAlreadyExists(member.getEmail())){
+            	responseObj.put("email", "Email taken");
+            }
+            if(nameAlreadyExists(member.getName())){
+            	responseObj.put("name", "Name taken");
+            }
             builder = Response.status(Response.Status.CONFLICT).entity(responseObj);
         } catch (Exception e) {
             // Handle generic exceptions
@@ -145,6 +150,9 @@ public class MemberResourceRESTService {
         if (emailAlreadyExists(member.getEmail())) {
             throw new ValidationException("Unique Email Violation");
         }
+        if (nameAlreadyExists(member.getName())) {
+            throw new ValidationException("Unique Name Violation");
+        }
     }
 
     /**
@@ -177,6 +185,22 @@ public class MemberResourceRESTService {
         Member member = null;
         try {
             member = repository.findByEmail(email);
+        } catch (NoResultException e) {
+            // ignore
+        }
+        return member != null;
+    }
+    /**
+     * Checks if a member with the same name address is already registered. This is the only way to easily capture the
+     * "@UniqueConstraint(columnNames = "name")" constraint from the Member class.
+     *
+     * @param name The email to check
+     * @return True if the name already exists, and false otherwise
+     */
+    public boolean nameAlreadyExists(String name) {
+        Member member = null;
+        try {
+            member = repository.findByName(name);
         } catch (NoResultException e) {
             // ignore
         }
